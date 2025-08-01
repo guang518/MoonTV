@@ -189,8 +189,6 @@ function LoginPageClient() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <p>关注微信公众号（APP宫殿2）回复【密码】获取密码</p>
-            <img src="https://gongdian.top/wx.jpg" alt="宫殿二维码" width="100" height="100">
           </div>
 
           {error && (
