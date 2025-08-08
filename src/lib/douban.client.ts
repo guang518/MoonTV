@@ -56,8 +56,28 @@ async function fetchWithTimeout(
     clearTimeout(timeoutId);
     return response;
   } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+    if (proxyUrl) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+    const fallbackUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(
+      url
+    )}`;
+    try {
+      const fallbackResponse = await fetch(fallbackUrl, fetchOptions);
+      clearTimeout(timeoutId);
+      if (!fallbackResponse.ok) {
+        throw new Error(`HTTP error! Status: ${fallbackResponse.status}`);
+      }
+      const fallbackData = await fallbackResponse.json();
+      if (fallbackData && fallbackData.contents) {
+        return JSON.parse(fallbackData.contents);
+      }
+      throw new Error('Invalid fallback response');
+    } catch (fallbackError) {
+      clearTimeout(timeoutId);
+      throw fallbackError;
+    }
   }
 }
 
@@ -119,6 +139,14 @@ export async function fetchDoubanCategories(
       list: list,
     };
   } catch (error) {
+    // 触发全局错误提示
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('globalError', {
+          detail: { message: '获取豆瓣分类数据失败' },
+        })
+      );
+    }
     throw new Error(`获取豆瓣分类数据失败: ${(error as Error).message}`);
   }
 }
@@ -140,6 +168,14 @@ export async function getDoubanCategories(
     );
 
     if (!response.ok) {
+      // 触发全局错误提示
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('globalError', {
+            detail: { message: '获取豆瓣分类数据失败' },
+          })
+        );
+      }
       throw new Error('获取豆瓣分类数据失败');
     }
 
@@ -167,6 +203,14 @@ export async function getDoubanList(
     );
 
     if (!response.ok) {
+      // 触发全局错误提示
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('globalError', {
+            detail: { message: '获取豆瓣列表数据失败' },
+          })
+        );
+      }
       throw new Error('获取豆瓣列表数据失败');
     }
 
@@ -222,6 +266,14 @@ export async function fetchDoubanList(
       list: list,
     };
   } catch (error) {
+    // 触发全局错误提示
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('globalError', {
+          detail: { message: '获取豆瓣列表数据失败' },
+        })
+      );
+    }
     throw new Error(`获取豆瓣分类数据失败: ${(error as Error).message}`);
   }
 }
